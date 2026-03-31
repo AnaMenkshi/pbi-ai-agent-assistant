@@ -1,5 +1,6 @@
 # PBI AI Agent
 
+
 > A locally-running AI agent for Power BI Desktop — reads your `.pbix` files directly, generates professional color themes, writes DAX measures, and provides intelligent dashboard design advice through a conversational web interface. No Azure. No cloud dependency. Completely free via Groq.
 
 ---
