@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Power BI AI Agent</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg0:#080d16;--bg1:#0f1623;--bg2:#161f30;--bg3:#1c2840;--bg4:#223050;--accent:#3b82f6;--accent2:#60a5fa;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--purple:#a78bfa;--t1:#f1f5f9;--t2:#94a3b8;--t3:#475569;--bd:rgba(255,255,255,0.06);--bd2:rgba(255,255,255,0.1);--bd3:rgba(255,255,255,0.15);--r:10px;--rs:6px;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg0);color:var(--t1);height:100vh;overflow:hidden;}
+.shell{display:grid;grid-template-columns:260px 1fr;grid-template-rows:54px 1fr;height:100vh;}
+.topbar{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid var(--bd);background:var(--bg1);}
+.logo{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;}
+.logo-box{width:30px;height:30px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.logo-box svg{width:15px;height:15px;fill:white;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.pill{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;}
+.pill.blue{background:rgba(59,130,246,.12);color:var(--accent2);border:1px solid rgba(59,130,246,.2);}
+.pill.green{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.2);display:flex;align-items:center;gap:5px;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sidebar{background:var(--bg1);border-right:1px solid var(--bd);overflow-y:auto;display:flex;flex-direction:column;padding:14px 0;}
+.sb-section{padding:0 14px;margin-bottom:16px;}
+.sb-label{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;padding:0 4px;margin-bottom:6px;}
+.file-card{background:var(--bg2);border:1px solid var(--bd2);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;}
+.file-card .fc-name{font-size:12px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-card .fc-sub{font-size:10px;color:var(--t3);margin-top:2px;}
+.btn{font-size:12px;padding:7px 14px;border-radius:var(--rs);cursor:pointer;font-family:inherit;font-weight:500;transition:all .15s;border:1px solid var(--bd2);background:var(--bg2);color:var(--t1);white-space:nowrap;}
+.btn:hover{background:var(--bg3);}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:white;}
+.btn.primary:hover{background:#2563eb;}
+.btn.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.25);color:var(--green);}
+.btn.ghost{background:transparent;border-color:var(--bd);color:var(--t2);}
+.btn.ghost:hover{background:var(--bg2);color:var(--t1);}
+.btn.full{width:100%;margin-bottom:6px;text-align:center;}
+.btn.sm{padding:4px 10px;font-size:11px;}
+.page-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--rs);cursor:pointer;font-size:12px;color:var(--t2);transition:all .15s;}
+.page-item:hover{background:var(--bg2);color:var(--t1);}
+.page-item.active{background:var(--bg3);color:var(--t1);font-weight:500;}
+.page-dot{width:8px;height:8px;border-radius:3px;flex-shrink:0;}
+.schema-table{font-size:11px;font-weight:600;color:var(--t2);margin-top:6px;margin-bottom:3px;}
+.schema-item{font-size:10px;color:var(--t3);padding:2px 8px;border-left:2px solid var(--bd2);margin-bottom:2px;}
+.main{display:flex;flex-direction:column;overflow:hidden;}
+.tabs{display:flex;border-bottom:1px solid var(--bd);padding:0 20px;background:var(--bg1);flex-shrink:0;}
+.tab{font-size:12.5px;padding:12px 14px;cursor:pointer;color:var(--t3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap;}
+.tab:hover{color:var(--t2);}
+.tab.active{color:var(--t1);border-bottom-color:var(--accent);font-weight:500;}
+.content{flex:1;overflow-y:auto;padding:22px;}
+.panel{display:none;}
+.panel.active{display:block;}
+.card{background:var(--bg1);border:1px solid var(--bd);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;}
+.card-title{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:12px;}
+.input{background:var(--bg2);border:1px solid var(--bd2);border-radius:var(--rs);padding:8px 12px;font-family:inherit;font-size:13px;color:var(--t1);outline:none;transition:border-color .15s;}
+.input:focus{border-color:var(--accent);}
+.input::placeholder{color:var(--t3);}
+.row{display:flex;align-items:center;gap:10px;}
+.agent-wrap{display:flex;flex-direction:column;height:calc(100vh - 54px - 45px - 44px);}
+.agent-header{background:var(--bg1);border:1px solid var(--bd);border-radius:var(--r);padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;}
+.ah-icon{width:36px;height:36px;background:rgba(167,139,250,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.ah-title{font-size:13px;font-weight:600;color:var(--t1);}
+.ah-sub{font-size:11px;color:var(--t3);margin-top:2px;}
+.chat-messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:16px;padding-bottom:8px;}
+.msg{display:flex;gap:10px;}
+.msg.user{flex-direction:row-reverse;}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;}
+.avatar.ai{background:rgba(167,139,250,.2);color:var(--purple);}
+.avatar.user{background:rgba(59,130,246,.2);color:var(--accent2);}
+.bubble{max-width:78%;border-radius:12px;padding:11px 15px;font-size:13px;line-height:1.65;border:1px solid var(--bd);}
+.bubble.ai{background:var(--bg2);color:var(--t1);}
+.bubble.user{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.2);}
+.bubble.executed{border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.05);}
+.exec-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,.12);color:var(--green);font-size:11px;padding:3px 9px;border-radius:10px;margin-top:8px;border:1px solid rgba(34,197,94,.2);}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.chip{font-size:11px;padding:4px 11px;border-radius:10px;border:1px solid var(--bd2);cursor:pointer;color:var(--t2);background:var(--bg2);transition:all .15s;}
+.chip:hover{background:var(--bg3);color:var(--t1);}
+.chat-input-area{padding-top:12px;border-top:1px solid var(--bd);}
+.chat-input-row{display:flex;gap:8px;align-items:flex-end;}
+.chat-textarea{flex:1;background:var(--bg2);border:1px solid var(--bd2);border-radius:var(--r);padding:10px 14px;font-family:inherit;font-size:13px;color:var(--t1);outline:none;resize:none;min-height:42px;max-height:120px;transition:border-color .15s;line-height:1.5;}
+.chat-textarea:focus{border-color:var(--accent);}
+.chat-textarea::placeholder{color:var(--t3);}
+.send-btn{width:42px;height:42px;background:var(--accent);border:none;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.send-btn:hover{background:#2563eb;}
+.send-btn svg{width:15px;height:15px;fill:white;}
+.send-btn:disabled{background:var(--bg3);cursor:not-allowed;}
+.attach-btn{width:36px;height:36px;background:var(--bg2);border:1px solid var(--bd2);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--t2);transition:all .15s;}
+.attach-btn:hover{background:var(--bg3);color:var(--t1);}
+.attachment-chip{display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--bd2);border-radius:var(--rs);padding:4px 10px;font-size:11px;color:var(--t2);}
+.attachment-chip img{width:32px;height:32px;object-fit:cover;border-radius:3px;}
+.attachment-chip .rm{cursor:pointer;color:var(--t3);margin-left:4px;font-size:13px;line-height:1;}
+.attachment-chip .rm:hover{color:var(--red);}
+#attachment-preview{display:none;padding:6px 0;gap:8px;flex-wrap:wrap;}
+.theme-result{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:10px;}
+.tr-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.tr-name{font-size:13px;font-weight:600;color:var(--t1);flex:1;}
+.color-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+.color-chip{display:flex;align-items:center;gap:5px;background:var(--bg3);border-radius:4px;padding:3px 7px;}
+.color-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+.color-chip span{font-size:10px;color:var(--t2);font-family:'DM Mono',monospace;}
+.vibe-text{font-size:11px;color:var(--t3);font-style:italic;}
+.tag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;}
+.tag.purple{background:rgba(167,139,250,.12);color:var(--purple);}
+.palette-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pal-card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:14px;cursor:pointer;transition:border-color .15s;}
+.pal-card:hover{border-color:var(--bd2);}
+.pal-card.selected{border:1.5px solid var(--accent);}
+.pal-swatches{display:flex;gap:4px;margin-bottom:8px;}
+.swatch{width:22px;height:22px;border-radius:4px;}
+.export-bar{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;gap:10px;margin-top:14px;}
+.export-bar span{font-size:12px;color:var(--accent2);flex:1;}
+.toast{border-radius:var(--rs);padding:8px 14px;font-size:12px;display:none;margin-top:8px;}
+.toast.success{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:var(--green);}
+.file-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;margin-bottom:12px;}
+.file-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);cursor:pointer;transition:border-color .15s;}
+.file-item:hover{border-color:var(--bd2);}
+.file-item.selected{border-color:var(--accent);}
+.fi-name{font-size:13px;font-weight:500;color:var(--t1);flex:1;}
+.fi-path{font-size:10px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:14px;height:14px;border:2px solid var(--bd2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;}
+.loading-row{display:flex;align-items:center;gap:8px;color:var(--t3);font-size:12px;padding:8px 0;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="topbar">
+  <div class="logo"><div class="logo-box"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg></div>Power BI AI Agent</div>
+  <div class="topbar-right">
+    <span class="pill blue" id="file-pill">No file loaded</span>
+    <span class="pill blue">Groq · llama-3.3-70b</span>
+    <span class="pill green"><span class="dot"></span>Ready</span>
+  </div>
+</div>
+<div class="sidebar">
+  <div class="sb-section">
+    <div class="sb-label">File</div>
+    <div class="file-card"><div class="fc-name" id="sb-file-name">No file loaded</div><div class="fc-sub" id="sb-file-sub">Scan to begin</div></div>
+    <button class="btn full ghost" onclick="scanFiles()">Scan for .pbix files</button>
+    <button class="btn full ghost" onclick="switchTab('load')">Browse manually</button>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Pages</div>
+    <div id="sb-pages"></div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Dataset</div>
+    <div id="sb-schema"></div>
+  </div>
+  <div class="sb-section" style="margin-top:auto;padding-top:10px;">
+    <button class="btn full ghost" onclick="switchTab('export')">Export / Apply themes</button>
+  </div>
+</div>
+<div class="main">
+  <div class="tabs">
+    <div class="tab active" data-tab="agent" onclick="switchTab('agent')">✦ AI Agent</div>
+    <div class="tab" data-tab="load" onclick="switchTab('load')">Load file</div>
+    <div class="tab" data-tab="auto" onclick="switchTab('auto')">Auto theme</div>
+    <div class="tab" data-tab="describe" onclick="switchTab('describe')">Describe</div>
+    <div class="tab" data-tab="browse" onclick="switchTab('browse')">Browse palettes</div>
+    <div class="tab" data-tab="export" onclick="switchTab('export')">Export / Apply</div>
+  </div>
+  <div class="content">
+
+    <div class="panel active" id="panel-agent">
+      <div class="agent-wrap">
+        <div class="agent-header">
+          <div class="ah-icon">✦</div>
+          <div>
+            <div class="ah-title">Dashboard AI Agent</div>
+            <div class="ah-sub">Load your .pbix — then tell me what to improve. I read, plan, and execute changes directly into your file.</div>
+          </div>
+          <button class="btn sm ghost" onclick="reloadAgent()" style="margin-left:auto;">Reload file</button>
+        </div>
+        <div class="chat-messages" id="agent-messages">
+          <div class="msg">
+            <div class="avatar ai">✦</div>
+            <div class="bubble ai">Hello! Load your .pbix file first, then tell me what you want improved. I will read all your pages, visuals, and dataset — then suggest and execute changes directly.<div class="chips"><span class="chip" onclick="agentChip(this)">Analyze my dashboard and suggest improvements</span><span class="chip" onclick="agentChip(this)">Redesign Page 1 to look more professional</span><span class="chip" onclick="agentChip(this)">Add KPI cards at the top of every page</span><span class="chip" onclick="agentChip(this)">Create a new Executive Summary page</span><span class="chip" onclick="agentChip(this)">Write DAX measures for growth and running totals</span></div></div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <div id="attachment-preview" style="display:none;padding:6px 0;display:none;gap:8px;flex-wrap:wrap;"></div>
+          <div class="chat-input-row">
+            <input type="file" id="file-upload" multiple accept="image/*,.csv,.json,.txt,.xlsx,.pdf" style="display:none;" onchange="handleFileUpload(this)">
+            <button class="attach-btn" onclick="document.getElementById('file-upload').click()" title="Attach image or file">
+              <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 8.5V11a4 4 0 0 1-8 0V4a2.5 2.5 0 0 1 5 0v7a1 1 0 0 1-2 0V5"/></svg>
+            </button>
+            <textarea class="chat-textarea" id="agent-input" placeholder="Tell the agent what to improve, redesign, or create…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAgent();}" oninput="autoResize(this)"></textarea>
+            <button class="send-btn" id="send-btn" onclick="sendAgent()"><svg viewBox="0 0 16 16"><path d="M2 8L13 2l-3.5 6L13 14 2 8z"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-load">
+      <div class="card"><div class="card-title">Find your .pbix file</div><button class="btn primary" onclick="scanFiles()" style="margin-bottom:12px;">Scan computer for .pbix files</button><div id="scan-results"></div></div>
+      <div class="card"><div class="card-title">Or paste the full path</div><div class="row"><input class="input" id="manual-path" placeholder="C:\Users\Ana\Desktop\Retail.pbix" style="flex:1;"><button class="btn primary" onclick="loadManual()">Load</button></div><div class="toast success" id="load-toast">File loaded!</div></div>
+    </div>
+
+    <div class="panel" id="panel-auto">
+      <div class="card"><div class="card-title">Auto-detect themes</div><p style="font-size:12px;color:var(--t2);margin-bottom:14px;">AI reads each page name and assigns the best professional color theme.</p><button class="btn primary" id="auto-btn" onclick="runAuto()">Detect themes for all pages</button></div>
+      <div id="auto-results"></div>
+    </div>
+
+    <div class="panel" id="panel-describe">
+      <div class="card"><div class="card-title">Describe a vibe</div>
+        <div class="row" style="margin-bottom:10px;"><select class="input" id="desc-page" style="width:180px;"><option value="all">All pages</option></select><input class="input" id="desc-vibe" placeholder="e.g. dark luxury navy gold…" style="flex:1;"><button class="btn primary" onclick="runDescribe()">Generate</button></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="chip" onclick="setVibe('dark luxury navy gold')">Dark luxury navy</span><span class="chip" onclick="setVibe('fresh clean white and green')">Fresh clean</span><span class="chip" onclick="setVibe('bold red and charcoal')">Bold red</span><span class="chip" onclick="setVibe('warm earthy amber')">Warm earthy</span><span class="chip" onclick="setVibe('minimal slate grey')">Minimal grey</span><span class="chip" onclick="setVibe('electric purple blue')">Electric purple</span></div>
+      </div>
+      <div id="describe-results"></div>
+    </div>
+
+    <div class="panel" id="panel-browse">
+      <div class="card"><div class="card-title">Browse curated palettes</div>
+        <select class="input" id="browse-page" style="width:220px;margin-bottom:14px;" onchange="loadBrowse()"><option value="">Select a page…</option></select>
+        <div class="palette-grid" id="browse-palettes"></div>
+        <div id="browse-apply-row" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-export">
+      <div class="card"><div class="card-title">Themes ready to export</div><div id="export-theme-list"></div>
+        <div class="export-bar" id="export-bar" style="display:none;"><span id="export-bar-text">Themes ready</span><button class="btn sm primary" onclick="downloadAll()">⬇ Download all as ZIP</button></div>
+        <div class="toast success" id="export-toast"></div>
+      </div>
+      <div class="card"><div class="card-title">How to apply in Power BI Desktop</div>
+        <p style="font-size:12px;color:var(--t2);line-height:1.8;">1. Click <strong style="color:var(--t1);">Save JSON files</strong><br>2. Open Power BI Desktop → <strong style="color:var(--t1);">View</strong> tab<br>3. <strong style="color:var(--t1);">Themes → Browse for themes</strong> → select JSON<br>4. If colors don't update: click visual → Format → reset color overrides</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+<script>
+let agentBusy=false,selBrowseIdx=-1,selBrowsePage='';
+let attachments = []; // {name, type, content (base64 or text), isImage}
+
+// ── File upload handler ───────────────────────────────────────────────────────
+async function handleFileUpload(input) {
+  const files = Array.from(input.files);
+  for (const file of files) {
+    const isImage = file.type.startsWith('image/');
+    const reader  = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target.result;
+      attachments.push({ name: file.name, type: file.type, content, isImage });
+      renderAttachments();
+    };
+    if (isImage) {
+      reader.readAsDataURL(file);
+    } else {
+      reader.readAsText(file);
+    }
+  }
+  input.value = '';
+}
+
+function renderAttachments() {
+  const preview = document.getElementById('attachment-preview');
+  if (!attachments.length) { preview.style.display = 'none'; return; }
+  preview.style.display = 'flex';
+  preview.innerHTML = attachments.map((a, i) => `
+    <div class="attachment-chip">
+      ${a.isImage ? `<img src="${a.content}" alt="${a.name}">` : '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="1" width="10" height="13" rx="1"/><path d="M5 5h6M5 8h6M5 11h4"/></svg>'}
+      <span>${a.name}</span>
+      <span class="rm" onclick="removeAttachment(${i})">✕</span>
+    </div>`).join('');
+}
+
+function removeAttachment(i) {
+  attachments.splice(i, 1);
+  renderAttachments();
+}
+function switchTab(n){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));const t=document.querySelector(`[data-tab="${n}"]`);if(t)t.classList.add('active');document.getElementById(`panel-${n}`).classList.add('active');if(n==='export')refreshExportPanel();}
+async function scanFiles(){const el=document.getElementById('scan-results');el.innerHTML='<div class="loading-row"><span class="spinner"></span> Scanning…</div>';const r=await fetch('/api/scan',{method:'POST'});const d=await r.json();if(!d.files.length){el.innerHTML='<p style="font-size:12px;color:var(--t3);padding:8px 0;">No .pbix files found. Use the path below.</p>';return;}el.innerHTML='<div class="file-list">'+d.files.map(f=>`<div class="file-item" onclick="selectAndLoad(this,'${f.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')"><span style="font-size:16px;">📊</span><div style="flex:1;min-width:0;"><div class="fi-name">${f.split(/[\\/]/).pop()}</div><div class="fi-path">${f}</div></div></div>`).join('')+'</div>';}
+function selectAndLoad(el,p){document.querySelectorAll('.file-item').forEach(f=>f.classList.remove('selected'));el.classList.add('selected');loadFile(p);}
+async function loadManual(){const p=document.getElementById('manual-path').value.trim();if(p)await loadFile(p);}
+async function loadFile(path){document.getElementById('file-pill').textContent='Loading…';const r=await fetch('/api/load',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path})});const d=await r.json();if(d.ok){const fn=path.split(/[\\/]/).pop();document.getElementById('sb-file-name').textContent=fn;document.getElementById('sb-file-sub').textContent=`${d.pages.length} page(s)`;document.getElementById('file-pill').textContent=fn;renderPages(d.pages);renderSchema(d.schema);populateSels(d.pages);document.getElementById('load-toast').style.display='block';setTimeout(()=>document.getElementById('load-toast').style.display='none',2500);appendMsg('ai',`Loaded <strong>${fn}</strong> — ${d.pages.length} pages. ${d.schema?.tables?.length?`Dataset: ${d.schema.tables.length} table(s).`:''}  What would you like me to improve?`);switchTab('agent');}else{alert('Error: '+d.error);}}
+function renderPages(pages){const cols=['#3b82f6','#22c55e','#f59e0b','#a78bfa','#ef4444','#06b6d4'];document.getElementById('sb-pages').innerHTML=pages.map((p,i)=>`<div class="page-item"><div class="page-dot" style="background:${cols[i%cols.length]};"></div>${p.displayName}</div>`).join('');}
+function renderSchema(s){
+  const el = document.getElementById('sb-schema');
+  if(!s?.tables?.length){el.innerHTML='<div style="font-size:11px;color:var(--t3);">Schema not available</div>';return;}
+  el.innerHTML = s.tables.map(t => {
+    const tname = t.name || t.table || 'Unknown';
+    const cols  = (t.columns||[]).map(c => {
+      const cname = typeof c === 'string' ? c : (c.name || '');
+      return `<div class="schema-item">${cname}</div>`;
+    }).join('');
+    const meas  = (s.measures||[]).filter(m => m.table === tname).map(m =>
+      `<div class="schema-item" style="color:var(--accent2);">∑ ${m.name||m}</div>`
+    ).join('');
+    return `<div class="schema-table">${tname}</div>${cols}${meas}`;
+  }).join('');
+  // Show measure count summary
+  if(s.measures?.length){
+    el.innerHTML += `<div style="font-size:10px;color:var(--t3);margin-top:6px;padding:0 4px;">${s.measures.length} measure(s) detected</div>`;
+  }
+}
+function populateSels(pages){['desc-page','browse-page'].forEach(id=>{const s=document.getElementById(id);const f=id==='desc-page'?'<option value="all">All pages</option>':'<option value="">Select a page…</option>';s.innerHTML=f+pages.map(p=>`<option value="${p.displayName}">${p.displayName}</option>`).join('');});}
+function agentChip(el){document.getElementById('agent-input').value=el.textContent;sendAgent();}
+async function sendAgent(){if(agentBusy)return;const inp=document.getElementById('agent-input');const msg=inp.value.trim();if(!msg && !attachments.length)return;inp.value='';autoResize(inp);
+
+// Build display message with attachment names
+let displayMsg = msg;
+if(attachments.length) displayMsg += `<br><span style="font-size:11px;color:var(--accent2);">📎 ${attachments.map(a=>a.name).join(', ')}</span>`;
+appendMsg('user', displayMsg);
+
+// Build full message for API including file contents
+let fullMsg = msg;
+if(attachments.length){
+  fullMsg += '\n\nAttached files:\n';
+  for(const a of attachments){
+    if(a.isImage){
+      fullMsg += `\n[IMAGE: ${a.name}] — I am attaching a screenshot/image. Please analyze it visually.\n`;
+    } else {
+      const preview = typeof a.content === 'string' ? a.content.slice(0, 3000) : '';
+      fullMsg += `\n[FILE: ${a.name}]\n${preview}${a.content.length > 3000 ? '\n...(truncated)' : ''}\n`;
+    }
+  }
+}
+
+// Clear attachments
+attachments = [];
+renderAttachments();
+
+agentBusy=true;document.getElementById('send-btn').disabled=true;const typing=appendMsg('ai','<span class="spinner"></span> Thinking…');
+try{
+  // For images, send as base64 to backend
+  const imageAttachments = attachments.filter ? [] : [];
+  const r=await fetch('/api/agent/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:fullMsg})});
+  const d=await r.json();
+  let html=d.reply.replace(/\n/g,'<br>');
+  const jsonMatch=d.reply.match(/```json\s*([\s\S]*?)\s*```/);
+  if(jsonMatch){try{const parsed=JSON.parse(jsonMatch[1]);const blob=new Blob([JSON.stringify(parsed,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const name=(parsed.name||'theme').replace(/\s+/g,'_')+'.json';html+=`<div style="margin-top:10px;"><a href="${url}" download="${name}" class="btn sm primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:5px;">⬇ Download ${name}</a></div>`;}catch(e){}}
+  if(d.executed){typing.querySelector('.bubble').classList.add('executed');typing.querySelector('.bubble').innerHTML=html+`<div class="exec-badge">✓ Changes executed — close and reopen your .pbix to see results</div>`;}
+  else{typing.querySelector('.bubble').innerHTML=html;}
+  if(d.error)typing.querySelector('.bubble').innerHTML+=`<br><span style="color:var(--red);font-size:11px;">Error: ${d.error}</span>`;
+}catch(e){typing.querySelector('.bubble').innerHTML='Server error. Make sure app.py is running.';}
+agentBusy=false;document.getElementById('send-btn').disabled=false;document.getElementById('agent-messages').scrollTop=99999;}
+function appendMsg(role,html){const cm=document.getElementById('agent-messages');const d=document.createElement('div');d.className=`msg ${role}`;d.innerHTML=`<div class="avatar ${role}">${role==='ai'?'✦':'U'}</div><div class="bubble ${role}">${html}</div>`;cm.appendChild(d);cm.scrollTop=99999;return d;}
+async function reloadAgent(){const r=await fetch('/api/agent/reload',{method:'POST'});const d=await r.json();if(d.ok)appendMsg('ai','File reloaded — I have the latest version of your .pbix.');}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+async function runAuto(){const btn=document.getElementById('auto-btn');btn.innerHTML='<span class="spinner"></span> Detecting…';btn.disabled=true;const r=await fetch('/api/auto',{method:'POST'});const d=await r.json();btn.innerHTML='Detect themes for all pages';btn.disabled=false;document.getElementById('auto-results').innerHTML=d.results.map(r=>r.palette?renderCard(r.page,r.palette):`<p style="color:var(--red);font-size:12px;">${r.error}</p>`).join('');}
+function setVibe(v){document.getElementById('desc-vibe').value=v;}
+async function runDescribe(){const page=document.getElementById('desc-page').value;const vibe=document.getElementById('desc-vibe').value.trim();if(!vibe)return;const el=document.getElementById('describe-results');el.innerHTML='<div class="loading-row"><span class="spinner"></span> Generating…</div>';const r=await fetch('/api/describe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({page,vibe})});const d=await r.json();el.innerHTML=d.results.map(r=>r.palette?renderCard(r.page,r.palette):`<p style="color:var(--red);">${r.error}</p>`).join('');}
+async function loadBrowse(){const page=document.getElementById('browse-page').value;if(!page)return;selBrowsePage=page;selBrowseIdx=-1;const r=await fetch(`/api/browse?page=${encodeURIComponent(page)}`);const d=await r.json();document.getElementById('browse-palettes').innerHTML=d.options.map((o,i)=>`<div class="pal-card" onclick="selPal(this,${i})"><div class="pal-swatches">${o.colors.slice(0,5).map(c=>`<div class="swatch" style="background:${c};"></div>`).join('')}</div><div style="font-size:12px;font-weight:600;color:var(--t1);">${o.name}</div><div style="font-size:11px;color:var(--t3);">${o.vibe}</div></div>`).join('');document.getElementById('browse-apply-row').innerHTML='';}
+function selPal(el,i){document.querySelectorAll('.pal-card').forEach(p=>p.classList.remove('selected'));el.classList.add('selected');selBrowseIdx=i;document.getElementById('browse-apply-row').innerHTML=`<button class="btn primary" onclick="applyBrowse()">Apply to ${selBrowsePage}</button>`;}
+async function applyBrowse(){if(selBrowseIdx<0)return;const r=await fetch('/api/browse/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({page:selBrowsePage,index:selBrowseIdx})});const d=await r.json();if(d.ok)document.getElementById('browse-apply-row').innerHTML+=`<span style="font-size:12px;color:var(--green);margin-left:10px;">✓ Applied!</span>`;}
+async function refreshExportPanel(){const r=await fetch('/api/state');const d=await r.json();const el=document.getElementById('export-theme-list');const t=d.themes;if(!Object.keys(t).length){el.innerHTML='<p style="font-size:12px;color:var(--t3);padding:8px 0;">No themes yet. Use Auto, Describe, or Browse first.</p>';document.getElementById('export-bar').style.display='none';return;}el.innerHTML=Object.entries(t).map(([p,pal])=>renderCard(p,pal,true)).join('');document.getElementById('export-bar').style.display='flex';document.getElementById('export-bar-text').textContent=`${Object.keys(t).length} theme(s) ready — download and import in Power BI Desktop`;}
+function downloadTheme(pageName){window.location.href=`/api/download/${encodeURIComponent(pageName.replace(/ /g,'_'))}`;}
+function downloadAll(){window.location.href='/api/download_all';}
+async function exportThemes(){const r=await fetch('/api/export',{method:'POST'});const d=await r.json();showToast('export-toast',`✓ Saved: ${d.files.join(', ')}`);}
+async function applyThemes(){if(!confirm('Inject themes into your .pbix? A backup will be created.'))return;const r=await fetch('/api/apply',{method:'POST'});const d=await r.json();showToast('export-toast',`✓ Injected ${d.results.filter(r=>r.success).length}/${d.results.length} theme(s)`);}
+function renderCard(page,pal,showDownload=false){const charts=(pal.chart_colors||[]).slice(0,6);return`<div class="theme-result"><div class="tr-top"><div class="tr-name">${page}</div>${showDownload?`<button class="btn sm primary" onclick="downloadTheme('${page}')">⬇ Download JSON</button>`:''}<span class="tag purple">${(pal.vibe_summary||'').split(' ').slice(0,4).join(' ')||'Custom'}</span></div><div class="color-row"><div class="color-chip"><div class="color-dot" style="background:${pal.background||'#000'};"></div><span>BG</span></div><div class="color-chip"><div class="color-dot" style="background:${pal.table_header||'#000'};"></div><span>Table</span></div><div class="color-chip"><div class="color-dot" style="background:${pal.kpi_card_bg||'#000'};"></div><span>KPI</span></div><div class="color-chip"><div class="color-dot" style="background:${pal.accent||'#000'};"></div><span>Accent</span></div></div><div class="color-row">${charts.map(c=>`<div class="color-chip"><div class="color-dot" style="background:${c};border-radius:50%;"></div><span>${c}</span></div>`).join('')}</div><div class="vibe-text">${pal.vibe_summary||''}</div></div>`;}
+function showToast(id,msg){const t=document.getElementById(id);t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',4000);}
+</script>
+</body>
+</html>
