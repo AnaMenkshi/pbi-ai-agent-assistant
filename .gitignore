@@ -1,0 +1,33 @@
+# Secrets
+.env
+*.env
+
+# Power BI files — do not commit your data
+*.pbix
+*.pbip
+
+# Generated theme outputs
+theme_*.json
+pbi_themes.zip
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python
+*.egg-info/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
